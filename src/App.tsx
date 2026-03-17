@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { generateMnemonic } from "bip39";
+import { SolanaWallet } from "../components/SolanaWallet";
 
 function App() {
   const [mnemonic, setMnemonic] = useState("");
@@ -15,6 +16,8 @@ function App() {
         {/* <input type="text" value={mnemonic}></input> */}
         <button onClick={handlegenerateMnemonic}>Create Seed</button>
         <p>{mnemonic}</p>
+
+        <SolanaWallet mnemonic={mnemonic} />
       </div>
     </>
   );
