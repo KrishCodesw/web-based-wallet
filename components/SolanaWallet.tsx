@@ -2,11 +2,13 @@ import { useState } from "react";
 import { mnemonicToSeedSync } from "bip39";
 import { derivePath } from "ed25519-hd-key";
 import { Keypair, PublicKey } from "@solana/web3.js";
-import nacl from "tweetnacl";
+import bs58 from "bs58";
 
 export function SolanaWallet({ mnemonic }: { mnemonic: string }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [publicKeys, setPublicKeys] = useState<PublicKey[]>([]);
+  const [wallet, setwallet] = useState<{ public: string; private: string }[]>(
+    [],
+  );
 
   const addWallet = () => {
     if (!mnemonic) return;
@@ -17,14 +19,32 @@ export function SolanaWallet({ mnemonic }: { mnemonic: string }) {
     const derivedSeed = derivePath(path, seed.toString("hex")).key; // What this function does is : Creates seeds specific for a wallet derived from the derivation path
     //  Ex : m/44'/501'/1'/0 || m/44'/501'/2'/0 so these two derivation paths are different and they will have a child seed for specific wallet
     const keypair = Keypair.fromSeed(derivedSeed);
-    console.log(keypair);
+    setwallet([
+      ...wallet,
+      {
+        public: keypair.publicKey.toBase58(),
+        private: bs58.encode(keypair.secretKey),
+      },
+    ]);
+    setCurrentIndex(currentIndex + 1);
   };
 
   return (
     <div>
       <button onClick={addWallet}>Add wallet</button>
-      {publicKeys.map((p) => (
-        <div>{p.toBase58()}</div>
+
+      {wallet.map((w, index) => (
+        <div
+          key={index}
+          style={{ marginBottom: "10px", border: "1px solid #ccc" }}
+        >
+          <p>
+            <strong>Public:</strong> {w.public}
+          </p>
+          <p>
+            <strong>Private (Hex):</strong> {w.private}
+          </p>
+        </div>
       ))}
     </div>
   );
